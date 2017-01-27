@@ -44,10 +44,9 @@ sieve = [False] * (prime_max + 1);
 for prime in primes:
     sieve[prime] = True;
 
-candidate = 1;
+length = 1;
 found = False;
 while True:
-    length = len(str(candidate));
     print "testing length = %d" % length;
     positions = [];
     for position in range(length):
@@ -55,41 +54,64 @@ while True:
     for replacement_count in range(1, length + 1):
         combinations = get_combinations(positions, replacement_count);
         for combination in combinations:
-            replacement_prime_count = 0;
-            for digit in range(10):
-                digit_char = str(digit);
-                number_list = list(str(candidate));
-                for replacement_index in combination:
-                    number_list[replacement_index] = digit_char;
-                number_string = str("".join(number_list));
-                # Don't count numbers that start with 0.
-                if number_string[0] != '0':
-                    number = int(number_string);
-                    if number > prime_max:
-                        print "Algorithm failed due to insufficiently large primes table."
-                        sys.exit(-1);
-                    if sieve[number]:
-                        replacement_prime_count += 1;
-            # print candidate, combination, replacement_prime_count;
-            if replacement_prime_count >= TARGET_REPLACEMENT_PRIME_COUNT:
-                found = True;
-                print;
-                print "%d %s:" % (candidate, str(combination));
+            anchor_length = length - replacement_count;
+            # print str(combination) + " " + str(anchor_length);
+            for anchor_number in range(10 ** (anchor_length)):
+                # Create the anchor--the part that doesn't get replaced.
+                anchor_string = str(anchor_number);
+                # Pad with enough leading zeros so the string length = anchor_length.
+                anchor_string_length = len(anchor_string);
+                if anchor_string_length < anchor_length:
+                    for i in range(anchor_length - anchor_string_length):
+                        anchor_string = '0' + anchor_string;
+                candidate_list = [None] * length;
+                anchor_index = 0;
+                for candidate_index in range(length):
+                    if candidate_index in combination:
+                        candidate_list[candidate_index] = '*';
+                    else:
+                        candidate_list[candidate_index] = anchor_string[anchor_index];
+                        anchor_index += 1;
+
+                # Count how many of the results of the replacements are prime.
+                candidate_wildcarded = str("".join(candidate_list));
+                replacement_prime_count = 0;
                 for digit in range(10):
                     digit_char = str(digit);
-                    number_list = list(str(candidate));
                     for replacement_index in combination:
-                        number_list[replacement_index] = digit_char;
-                    number_string = str("".join(number_list));
+                        candidate_list[replacement_index] = digit_char;
+                    candidate_string = str("".join(candidate_list));
                     # Don't count numbers that start with 0.
-                    if number_string[0] != '0' and sieve[int(number_string)]:
-                        print " " + number_string;
-                print;
+                    if candidate_string[0] != '0':
+                        candidate = int(candidate_string);
+                        if candidate > prime_max:
+                            print "Algorithm failed due to insufficiently large primes table."
+                            sys.exit(-1);
+                        if sieve[candidate]:
+                            replacement_prime_count += 1;
+                # print candidate_list, combination, replacement_prime_count;
+
+                # Stop after the target count is found.
+                if replacement_prime_count >= TARGET_REPLACEMENT_PRIME_COUNT:
+                    found = True;
+                    print;
+                    print "%s:" % candidate_wildcarded;
+                    for digit in range(10):
+                        digit_char = str(digit);
+                        for replacement_index in combination:
+                            candidate_list[replacement_index] = digit_char;
+                        candidate_string = str("".join(candidate_list));
+                        # Don't count numbers that start with 0.
+                        if candidate_string[0] != '0' and sieve[int(candidate_string)]:
+                            print " " + candidate_string;
+                    print;
+                    break;
+            if found:
                 break;
         if found:
             break;
     if found:
         break;
-    candidate += 1;
+    length += 1;
 
 print "Execution time = %f seconds." % (time.time() - start_time);
