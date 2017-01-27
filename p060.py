@@ -87,7 +87,7 @@ for p in primes:
 print "Execution time = %f seconds." % (time.time() - start_time);
 
 """
-This is very slow (Macbook Air Mid 2009, 2.13GHz Intel Core 2 Duo), and it gives the wrong answer(!):
+This requires a large primes file, and it gives the wrong answer(!):
 
 known prime count = 10000000
 known prime max   = 179424673
