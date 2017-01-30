@@ -20,66 +20,172 @@
 
 import math;
 import time;
-import sys;
 
 start_time = time.time();
 
-K = 6;
 K = 12;
-K = 12000;
-R = 1 + int(math.log(K, 2));
-S_k_r = [None] * (K + 1);
-for k in range(K + 1):
-    S_k_r[k] = [None] * (R + 1);
-    for r in range(R + 1):
-        S_k_r[k][r] = [];
 
 def print_execution_time():
     print "Execution time = %f seconds." % (time.time() - start_time);
 
-def calculate_S_k_r(k, r):
-    if len(S_k_r[k][r]) > 0:
-        return;
-    if r == 2:
-        d_max = int(math.sqrt(k - 1));
-        for d in range(1, d_max + 1):
-            if (k - 1) % d == 0:
-                S_k_r[k][r].append([d + 1, ((k - 1) / d) + 1]);
-        return;
-    j_max = (k - (3 * r) + 2) / 2;
-    j_min = (2 ** (r - 2)) - r;
-    if j_min > j_max:
-        return;
-    for j in (j_max, j_min - 1, -1):
-        for array in S_k_r[j + r][r - 1]:
-            numerator = k - r - j;
-            denominator = sum(array) + j;
-            if numerator % denominator == 0:
-                new_array = sorted(array + ([1 + (numerator / denominator)]));
-                if not new_array in S_k_r[k][r]:
-                    S_k_r[k][r].append(new_array);
+# Read the primes from a file, and initialize the Sieve of Eratosthenes.
+primes = [];
+infile = open("../primes/primes_below_2_million.txt", "r");
+for line in infile:
+    primes.append(int(line));
+infile.close();
+prime_count = len(primes);
+prime_max = primes[-1];
+print "known prime count = %d" % prime_count;
+print "known prime max   = %d" % prime_max;
+sieve = [False] * (prime_max + 1);
+for prime in primes:
+    sieve[prime] = True;
 
-for k in range(2, K + 1):
-    r_max = 1 + int(math.log(k, 2));
-    for r in range(r_max, 1, -1):
-        calculate_S_k_r(k, r);
+# Returns the prime factorization of n as a list of 2-tuples [p, m] where p is the prime factor and m is the multiplicity of
+# that prime factor. For example, if n is 2000, the prime factorization is [[2, 4], [5, 3]] since 2000 = 2^4 * 5^3.
+def get_prime_factorization(n):
+    prime_factorization = [];
+    prime_index = 0;
+    prime = primes[prime_index];
+    while n > 1:
+        if n <= prime_max and sieve[n]:
+            prime_factorization.append([n, 1]);
+            break;
+        prime = primes[prime_index];
+        prime_multiplicity = 0;
+        while n % prime == 0:
+            prime_multiplicity += 1;
+            n /= prime;
+        if prime_multiplicity > 0:
+            prime_factorization.append([prime, prime_multiplicity]);            
+        prime_index += 1;
+        if prime_index >= prime_count:
+            print "get_prime_factorization(%d) failed due to insufficiently large primes table." % n;
+            sys.exit();
+    return prime_factorization;
 
-v_min = [sys.maxint] * (K + 1);
-for k in range(len(S_k_r)):
-    for r in range(len(S_k_r[k])):
-        ones = k - r;
-        for array in S_k_r[k][r]:
-            v = ones + sum(array);
-            if v < v_min[k]:
-                v_min[k] = v;
+def get_partition_pretty_string(partition):
+    pretty_string = "[";
+    for integer in range(len(partition)):
+        cardinality = partition[integer];
+        if cardinality > 0:
+            for i in range(cardinality):
+                pretty_string += (str(integer) + " ");
+            pretty_string = pretty_string[:-1];
+            pretty_string += " ";
+    pretty_string = pretty_string[:-1];
+    pretty_string += "]";
+    return pretty_string;
 
-v_min_unique = set();
-for i in range(2, len(v_min)):
-    v_min_unique.add(v_min[i])
-    # print i, v_min[i], S_k_r[i];
+def generate_integer_partitions(integer_maximum):
+    partitions_list = [[], [[0, 1]]];
+    integer = 1;
+    while integer < integer_maximum:
+        integer += 1;
+        previous_partitions = partitions_list[-1];
+        partitions = list();
+        for previous_partition in previous_partitions:
+            partition = list(previous_partition);
+            partition[1] += 1;
+            # print partition;
+            partitions.append(partition);
+        for previous_partition in previous_partitions:
+            partition_length = len(previous_partition);
+            for i in range(partition_length):
+                partition = list(previous_partition);
+                if partition[i] > 0:
+                    partition[i] -= 1;
+                    if i + 1 == partition_length:
+                        partition += [1];
+                    else:
+                        partition[i + 1] += 1;
+                    if not partition in partitions:
+                        # print partition;
+                        partitions.append(partition);
+        # print partitions;
+        partitions_list.append(partitions);
+        print "partitions_list[%d] = %d" % (integer, len(partitions_list[integer]));
+    return partitions_list;
 
-# print len(v_min_unique);
-# print sorted(v_min_unique);
-print "sum of minimal product-sum numbers for (2 <= k <= %d) = %d." % (K, sum(v_min_unique));
+partition_size_max = int(math.log(2 * K, 2))
+partitions_list = generate_integer_partitions(partition_size_max);
+"""
+for partitions in partitions_list:
+    for partition in partitions:
+        print get_partition_pretty_string(partition);
+    print;
+"""
+
+class PrimeFactor:
+    prime = None;
+    exponent = None;
+    combination_count = None;
+    divisor = None;
+    def __init__(self, prime, exponent, total_remaining_combination_count):
+        self.prime = prime;
+        self.exponent = exponent;
+        self.combination_count = len(partitions_list[exponent]);
+        self.divisor = total_remaining_combination_count / self.combination_count;
+    def __str__(self):
+        return "(p=%d;e=%d;c=%d;d=%d)" % (self.prime, self.exponent, self.combination_count, self.divisor);
+    def __repr__(self):
+        return  repr(str(self));
+
+product_sums = [None] * (K + 1);
+for k in range(K + 1):
+    product_sums[k] = [];
+for n in range(2, (2 * K) + 1):
+    prime_factorization = get_prime_factorization(n);
+    print n, prime_factorization;
+    total_combination_count = 1;
+    for prime_and_exponent in prime_factorization:
+        exponent = prime_and_exponent[1];
+        total_combination_count *= len(partitions_list[exponent]);
+    prime_factors = [];
+    total_remaining_combination_count = total_combination_count;
+    for prime_and_exponent in prime_factorization:
+        prime = prime_and_exponent[0];
+        exponent = prime_and_exponent[1];
+        prime_factor = PrimeFactor(prime, exponent, total_remaining_combination_count);
+        total_remaining_combination_count = prime_factor.divisor;
+        prime_factors.append(prime_factor);
+    print prime_factors;
+    for c in range(total_combination_count):
+        factors = [];
+        for prime_factor in prime_factors:
+            partition_index = (c / prime_factor.divisor) % prime_factor.combination_count;
+            partition = partitions_list[prime_factor.exponent][partition_index];
+            # print partition;
+            for integer in range(len(partition)):
+                exponent = partition[integer];
+                factor = prime_factor.prime ** integer;
+                for e in range(exponent):
+                    factors.append(factor);
+        summation = sum(factors);
+        ones = n - summation;
+        k = len(factors) + ones;
+        print k, ones, summation, factors;
+        if k <= K:
+            product_sums[k].append(n);
+    print;
+
+for i in range(K + 1):
+    print product_sums[i];
+
+print "sum of minimal product-sum numbers for (2 <= k <= %d) = %d." % (K, 0);
 
 print_execution_time();
+
+
+
+
+
+
+
+
+
+
+
+
+
