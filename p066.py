@@ -24,28 +24,7 @@ import sys;
 
 start_time = time.time();
 
-# x1^2 - D * y1^2 = k1
-# x2^2 - D * y2^2 = k2
-# (x1^2 - D * y1^2) * (x2^2 - D * y2^2) = k1 * k2
-#
-# Brahmagupta's identity:
-#   (x1^2 - D * y1^2)(x2^2 - D * y2^2)
-#   = x1^2 * x2^2 - D * x1^2 * y2^2 - D * x2^2 * y1^2 + D^2 * y1^2 * y2^2
-#   = (x1^2 * x2^2 + 2 * D * x1 * x2 * y1 * y2 + D^2 * y1^2 * y2^2) - D * x1^2 * y2^2 - D * x2^2 * y1^2 - 2 * D * x1 * x2 * y1 * y2
-#   = ((x1 * x2 + D * y1 * y2)^2) - D * (x1^2 * y2^2 + 2 * x1 * x2 * y1 * y2 + x2^2 * y1^2)
-#   = ((x1 * x2 + D * y1 * y2)^2) - D * (x1 * y2 + x2 * y1)^2
-#
-# (x1^2 - D * y1^2)(x2^2 - D * y2^2) = k1 * k2
-# ((x1 * x2 + D * y1 * y2)^2) - D * (x1 * y2 + x2 * y1)^2 = k1 * k2
-#   x' = (x1 * x2 + D * y1 * y2)
-#   y' = (x1 * y2 + x2 * y1)
-#   k' = (k1 * k2)
-def compose(D, x1, y1, k1, x2, y2, k2):
-    abs_k1 = abs(k1);
-    x_prime = ((x1 * x2) + (D * y1 * y2)) / abs_k1;
-    y_prime = ((x1 * y2) + (x2 * y1)) / abs_k1;
-    k_prime = k2 / k1;
-    return (x_prime, y_prime, k_prime);
+N = 1000;
 
 # Extended Euclidean algorithm.
 # Finds the gcd and the integral solutions to:
@@ -131,93 +110,24 @@ def chakravala(D, x, y, k):
     print (D - (m * m)), k, (D - (m * m)) % k, k_prime;
     return (x_prime, y_prime, k_prime);
 
-def test_extended_euclid(a, b, c):
-    (r, s, t) = extended_euclid(a, b);
-    print (a, b, (r, s, t), c / r, c % r);
-    print;
-
-#test_extended_euclid(7, 11, 6);
-#test_extended_euclid(7, -11, 6);
-#test_extended_euclid(-7, 11, 6);
-#test_extended_euclid(-7, -11, 6);
-#test_extended_euclid(22, 4, 6);
-#test_extended_euclid(22, -4, 6);
-#test_extended_euclid(-22, 4, 6);
-#test_extended_euclid(-22, -4, 6);
-#test_extended_euclid(3, -1, 8);
-#test_extended_euclid(6, -5, 41);
-#test_extended_euclid(7, -11, 90);
-#test_extended_euclid(22, -4, 6);
-#test_extended_euclid(11, -2, 3);
-'''
-print find_m(61, 8, 1, 3);
-print;
-print find_m(67, 8, 1, 3);
-print;
-print find_m(67, 41, 5, 6);
-print;
-print find_m(67, 90, 11, 7);
-'''
-
-'''
-print (1071, 462, extended_euclid(1071, 462));
-print;
-print (240, 46, extended_euclid(240, 46));
-print;
-print (-46, 240, extended_euclid(-46, 240));
-print;
-print (240, 46, extended_euclid(240, 46));
-'''
-#print compose(61, 8, 1, 3, 7, 1, -12);
-#print compose(67, 8, 1, -3, 7, 1, -18);
-#print chakravala(61, 8, 1, 3); # 7
-#print chakravala(67, 8, 1, -3); # 7
-#print chakravala(67, 41, 5, 6); # 5
-
-D = 67;
-x = 8;
-y = 1;
-k = -3;
-while k != 1:
-    (x, y, k) = chakravala(D, x, y, k);
-    print x, y, k;
-    print;
-
-print "----------------------------------------------------------------------------";
-
-D = 61;
-x = 8;
-y = 1;
-k = 3;
-while k != 1:
-    (x, y, k) = chakravala(D, x, y, k);
-    print x, y, k;
-    print;
-
-"""
-# x^2 - D * y^2 = 1
-#
-# x = sqrt(1 + (D * y^2))
-def get_x(D, y):
-    x_squared = 1 + (D * y * y);
-    x = int(math.sqrt(x_squared));
-    if (x * x) == x_squared:
-        return x;
-    else:
-        return None;
-
-for D in [2, 3, 5, 6, 7, 13, 92]:
-# for D in range(61):
+x_max = 0;
+x_argmax_D = 0;
+for D in range(N + 1):
     # Exclude perfect squares.
-    if (int(math.sqrt(D)) ** 2) != D and not D in [61, 109, 149]:
+    if (int(math.sqrt(D)) ** 2) != D:
+        x = int(math.sqrt(D));
         y = 1;
-        while True:
-            x = get_x(D, y);
-            if x != None:
-                print "D = %04d: x = %d, y = %d." % (D, x, y);
-                break;
-            y += 1;
-"""
+        k = (x * x) - D;
+        while k != 1:
+            (x, y, k) = chakravala(D, x, y, k);
+            print x, y, k;
+            print;
+        print x;
+        if x > x_max:
+            x_max = x;
+            x_argmax_D = D;
+        print "----------------------------------------------------------------------------";
+print "x_max = %d, x_argmax_D = %d." % (x_max, x_argmax_D);
 
 print;
 print "Execution time = %f seconds." % (time.time() - start_time);
