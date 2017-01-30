@@ -18,110 +18,68 @@
 #
 # What is the sum of all the minimal product-sum numbers for 2 <= k <= 12000?
 
-import numpy;
 import math;
 import time;
 import sys;
 
 start_time = time.time();
 
+K = 6;
+K = 12;
+K = 12000;
+R = 1 + int(math.log(K, 2));
+S_k_r = [None] * (K + 1);
+for k in range(K + 1):
+    S_k_r[k] = [None] * (R + 1);
+    for r in range(R + 1):
+        S_k_r[k][r] = [];
+
 def print_execution_time():
     print "Execution time = %f seconds." % (time.time() - start_time);
 
-def get_next_size_arrays(current_arrays, summation):
-    arrays = list();
-    for current_array in current_arrays:
-        length = len(current_array);
-        array = list(current_array);
-        array[length - 1] += 1;
-        if not (array in arrays):
-            arrays.append(array);
-            product = numpy.prod(array);
-            print "%d %s %d" % (summation, array, product);
-            if product == summation:
-                print array;
-                sys.exit("found it!");
-        array = list(current_array);
-        for i in range(length - 2, -1, -1):
-            if array[i] < array[i + 1]:
-                array[i] += 1;
-                if not (array in arrays):
-                    arrays.append(array);
-                    product = numpy.prod(array);
-                    print "%d %s %d" % (summation, array, product);
-                    if product == summation:
-                        print array;
-                        sys.exit("found it!");
-                array = list(current_array);
-    return arrays;
+def calculate_S_k_r(k, r):
+    if len(S_k_r[k][r]) > 0:
+        return;
+    if r == 2:
+        d_max = int(math.sqrt(k - 1));
+        for d in range(1, d_max + 1):
+            if (k - 1) % d == 0:
+                S_k_r[k][r].append([d + 1, ((k - 1) / d) + 1]);
+        return;
+    j_max = (k - (3 * r) + 2) / 2;
+    j_min = (2 ** (r - 2)) - r;
+    if j_min > j_max:
+        return;
+    for j in (j_max, j_min - 1, -1):
+        for array in S_k_r[j + r][r - 1]:
+            numerator = k - r - j;
+            denominator = sum(array) + j;
+            if numerator % denominator == 0:
+                new_array = sorted(array + ([1 + (numerator / denominator)]));
+                if not new_array in S_k_r[k][r]:
+                    S_k_r[k][r].append(new_array);
 
-N = 10000;
-unknown_count = 1 + int(math.log(N, 2));
-ones_count = N - unknown_count;
-print("%d %d %d" % (N, unknown_count, ones_count));
-current_arrays = [[1] * unknown_count];
-print len(current_arrays), current_arrays;
-summation = N;
-while (True):
-    summation += 1;
-    current_arrays = get_next_size_arrays(current_arrays, summation);
-    #print len(current_arrays), current_arrays;
+for k in range(2, K + 1):
+    r_max = 1 + int(math.log(k, 2));
+    for r in range(r_max, 1, -1):
+        calculate_S_k_r(k, r);
 
-'''
-111 3
+v_min = [sys.maxint] * (K + 1);
+for k in range(len(S_k_r)):
+    for r in range(len(S_k_r[k])):
+        ones = k - r;
+        for array in S_k_r[k][r]:
+            v = ones + sum(array);
+            if v < v_min[k]:
+                v_min[k] = v;
 
-112 4
+v_min_unique = set();
+for i in range(2, len(v_min)):
+    v_min_unique.add(v_min[i])
+    # print i, v_min[i], S_k_r[i];
 
-113 5
-122 5
-
-114 6
-123 6
-222 6
-
-115 7
-124 7
-133 7
-223 7
-
-116 8
-125 8
-134 8
-224 8
-235 8
-
-117 9
-126 9
-135 9
-144 9
-225 9
-234 9
-333 9
-
-118 10
-127 10
-136 10
-145 10
-226 10
-235 10
-244 10
-334 10
-
-119 11
-128 11
-137 11
-146 11
-155 11
-
-129 12
-138 12
-147 12
-156 12
-'''
+# print len(v_min_unique);
+# print sorted(v_min_unique);
+print "sum of minimal product-sum numbers for (2 <= k <= %d) = %d." % (K, sum(v_min_unique));
 
 print_execution_time();
-
-'''
-Early attempt--testing showed this to be too slow, so this approach was abandoned.
-'''
-
