@@ -23,7 +23,9 @@ import time;
 
 start_time = time.time();
 
+K= 6;
 K = 12;
+K = 12000;
 
 def print_execution_time():
     print "Execution time = %f seconds." % (time.time() - start_time);
@@ -108,72 +110,91 @@ def generate_integer_partitions(integer_maximum):
         print "partitions_list[%d] = %d" % (integer, len(partitions_list[integer]));
     return partitions_list;
 
-partition_size_max = int(math.log(2 * K, 2))
-partitions_list = generate_integer_partitions(partition_size_max);
-"""
-for partitions in partitions_list:
+def extend_partitions(partitions, new_member):
+    new_partitions_list = [];
     for partition in partitions:
-        print get_partition_pretty_string(partition);
-    print;
-"""
+        new_partition = list(partition);
+        new_partition.append(new_member);
+        new_partition.sort();
+        if not new_partition in new_partitions_list:
+            # print new_partition;
+            new_partitions_list.append(new_partition);
+        previous_member = 0;
+        for s in range(len(partition) - 1, -1, -1):
+            member = new_partition[s];
+            if member != previous_member:
+                previous_member = member;
+                new_partition = list(partition);
+                new_partition[s] *= new_member;
+                new_partition.sort();
+                if not new_partition in new_partitions_list:
+                    # print new_partition;
+                    new_partitions_list.append(new_partition);
+    return new_partitions_list;
 
-class PrimeFactor:
-    prime = None;
-    exponent = None;
-    combination_count = None;
-    divisor = None;
-    def __init__(self, prime, exponent, total_remaining_combination_count):
-        self.prime = prime;
-        self.exponent = exponent;
-        self.combination_count = len(partitions_list[exponent]);
-        self.divisor = total_remaining_combination_count / self.combination_count;
-    def __str__(self):
-        return "(p=%d;e=%d;c=%d;d=%d)" % (self.prime, self.exponent, self.combination_count, self.divisor);
-    def __repr__(self):
-        return  repr(str(self));
+max_integer_partition_size = int(math.log(2 * K, 2));
+integer_partitions_list = generate_integer_partitions(max_integer_partition_size);
 
 product_sums = [None] * (K + 1);
 for k in range(K + 1):
     product_sums[k] = [];
+
 for n in range(2, (2 * K) + 1):
+
+    # Generate all factorizations of n.
+    factorizations = [];
     prime_factorization = get_prime_factorization(n);
-    print n, prime_factorization;
-    total_combination_count = 1;
-    for prime_and_exponent in prime_factorization:
+    max_exponent = 0;
+    max_exponent_prime = 0;
+    max_exponent_index = -1;
+    prime_factorization_length = len(prime_factorization);
+    for index in range(prime_factorization_length):
+        prime_and_exponent = prime_factorization[index];
         exponent = prime_and_exponent[1];
-        total_combination_count *= len(partitions_list[exponent]);
-    prime_factors = [];
-    total_remaining_combination_count = total_combination_count;
+        if exponent > max_exponent:
+            max_exponent = exponent;
+            max_exponent_index = index;
+            max_exponent_prime = prime_and_exponent[0];
+    del prime_factorization[max_exponent_index];
+    integer_partitions = integer_partitions_list[max_exponent];
+    for partition in integer_partitions:
+        factorization = [];
+        partition_index_length = len(partition);
+        # Start at index at 1 rather than 0 because partition[0] is always 0.
+        for partition_index in range(1, partition_index_length):
+            factor_count = partition[partition_index];
+            for f in range(factor_count):
+                factorization.append(max_exponent_prime ** partition_index);
+        factorizations.append(factorization);
     for prime_and_exponent in prime_factorization:
         prime = prime_and_exponent[0];
         exponent = prime_and_exponent[1];
-        prime_factor = PrimeFactor(prime, exponent, total_remaining_combination_count);
-        total_remaining_combination_count = prime_factor.divisor;
-        prime_factors.append(prime_factor);
-    print prime_factors;
-    for c in range(total_combination_count):
-        factors = [];
-        for prime_factor in prime_factors:
-            partition_index = (c / prime_factor.divisor) % prime_factor.combination_count;
-            partition = partitions_list[prime_factor.exponent][partition_index];
-            # print partition;
-            for integer in range(len(partition)):
-                exponent = partition[integer];
-                factor = prime_factor.prime ** integer;
-                for e in range(exponent):
-                    factors.append(factor);
-        summation = sum(factors);
-        ones = n - summation;
-        k = len(factors) + ones;
-        print k, ones, summation, factors;
+        for e in range(exponent):
+            factorizations = extend_partitions(factorizations, prime);
+    # print factorizations; print;
+
+    for factorization in factorizations:
+        summation = sum(factorization);
+        ones_count = n - summation;
+        k = len(factorization) + ones_count;
         if k <= K:
             product_sums[k].append(n);
+
+min_product_sum_set = set();
+for k in range(2, K + 1):
+    min_product_sum = min(product_sums[k]);
+    min_product_sum_set.add(min_product_sum);
+    print k, min_product_sum, product_sums[k];
+print sorted(min_product_sum_set);
+
+'''
+for partitions in integer_partitions_list:
+    for partition in partitions:
+        print get_partition_pretty_string(partition);
     print;
+'''
 
-for i in range(K + 1):
-    print product_sums[i];
-
-print "sum of minimal product-sum numbers for (2 <= k <= %d) = %d." % (K, 0);
+print "sum of minimal product-sum numbers for (2 <= k <= %d) = %d." % (K, sum(min_product_sum_set));
 
 print_execution_time();
 
