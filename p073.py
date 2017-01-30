@@ -19,77 +19,13 @@ start_time = time.time();
 # DENOMINATOR_MAX = 8;
 DENOMINATOR_MAX = 12000;
 
-# Read the primes from a file, and initialize the Sieve of Eratosthenes.
-primes = [];
-infile = open("../primes/primes_below_2_million.txt", "r");
-for line in infile:
-    primes.append(int(line));
-infile.close();
-prime_count = len(primes);
-prime_max = primes[-1];
-print "known prime count = %d" % prime_count;
-print "known prime max   = %d" % prime_max;
-sieve = [False] * (prime_max + 1);
-for prime in primes:
-    sieve[prime] = True;
-
-# Returns the prime factorization of n as a list of 2-tuples [p, m] where p is the prime factor and m is the multiplicity of
-# that prime factor. For example, if n is 2000, the prime factorization is [[2, 4], [5, 3]] since 2000 = 2^4 * 5^3.
-def get_prime_factorization(n):
-    prime_factorization = [];
-    prime_index = 0;
-    prime = primes[prime_index];
-    while n > 1:
-        if n <= prime_max and sieve[n]:
-            # print n;
-            prime_factorization.append([n, 1]);
-            break;
-        prime = primes[prime_index];
-        prime_multiplicity = 0;
-        while n % prime == 0:
-            # print prime;
-            prime_multiplicity += 1;
-            n /= prime;
-        if prime_multiplicity > 0:
-            prime_factorization.append([prime, prime_multiplicity]);            
-        prime_index += 1;
-        if prime_index >= prime_count:
-            print "get_prime_factorization(%d) failed due to insufficiently large primes table." % n;
-            sys.exit();
-    return prime_factorization;
-
 def get_gcd(a, b):
-    gcd = 1;
-    a_factorization = get_prime_factorization(a);
-    b_factorization = get_prime_factorization(b);
-    # print a_factorization;
-    # print b_factorization;
-    b_index = 0;
-    b_length = len(b_factorization);
-    for a_factor_exponent in a_factorization:
-        a_factor = a_factor_exponent[0];
-        while (b_index < b_length) and (b_factorization[b_index][0] < a_factor):
-            b_index += 1;
-        if b_index >= b_length:
-            break;
-        b_factor_exponent = b_factorization[b_index];
-        b_factor = b_factor_exponent[0];
-        if b_factor == a_factor:
-            gcd_exponent = min(a_factor_exponent[1], b_factor_exponent[1])
-            # print a_factor, gcd_exponent;
-            gcd *= (a_factor ** gcd_exponent);
-    return gcd;
-
-def get_reduced_fraction(n, d):
-    gcd = get_gcd(n, d);
-    return (n / gcd, d / gcd);
-
-def test_get_reduced_fraction():
-    for a in range(1, 101):
-        print;
-        for b in range(1, 101):
-            (n, d) = get_reduced_fraction(a, b);
-            print "%d / %d = %d / %d" % (a, b, n, d);
+    r = a % b;
+    while r != 0:
+        a = b;
+        b = r;
+        r = a % b;
+    return b;
 
 TARGET_NUMERATOR_LOW    = 1;
 TARGET_DENOMINATOR_LOW  = 3;
@@ -126,19 +62,3 @@ print "number of reduced fractions = %d." % count;
 
 print;
 print "Execution time = %f seconds." % (time.time() - start_time);
-
-"""
-This works, but is slow (Macbook Air Mid 2009, 2.13GHz Intel Core 2 Duo):
-
-known prime count = 148933
-known prime max   = 1999993
-completed 100 of 12000
-completed 200 of 12000
-completed 300 of 12000
-...
-completed 12000 of 12000
-
-number of reduced fractions = 7295372.
-
-Execution time = 183.296513 seconds.
-"""
