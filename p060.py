@@ -107,7 +107,7 @@ def test_quartets_list_for_new_quintets(prime_quartets_list, new_prime):
     return new_quintets;
 
 # Read the primes from a file, and initialize the Sieve of Eratosthenes.
-infile = open("../primes/primes_below_2_million.txt", "r");
+infile = open("primes_below_2_million.txt", "r");
 for line in infile:
     primes.append(int(line));
 infile.close();

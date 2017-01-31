@@ -37,7 +37,7 @@ def initialize_primes_lists():
     global prime_count;
     global prime_max;
     global prime_sieve;
-    infile = open('../primes/primes_below_2_million.txt', 'r');
+    infile = open('primes_below_2_million.txt', 'r');
     for line in infile:
         primes.append(int(line));
     infile.close();

@@ -24,7 +24,7 @@ def print_execution_time():
 # Reads primes from a file, and initializes the Sieve of Eratosthenes.
 def load_primes_and_sieve():
     primes = [];
-    infile = open("../primes/primes_below_2_million.txt", "r");
+    infile = open("primes_below_2_million.txt", "r");
     for line in infile:
         primes.append(int(line));
     infile.close();

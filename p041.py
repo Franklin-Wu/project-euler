@@ -50,7 +50,7 @@ N = 7654321;
 
 # Read the primes from a file.
 primes = [];
-infile = open("../primes/primes_below_2_million.txt", "r");
+infile = open("primes_below_2_million.txt", "r");
 for line in infile:
     primes.append(int(line));
 infile.close();
