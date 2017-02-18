@@ -40,17 +40,13 @@ def get_permutations(strings, count):
 
 class AnagramPair:
     ASCII_A = ord('A');
-    word_a = None;
-    word_b = None;
-    keys = None;
-    key_count = None;
     def __init__(self, word_a, word_b):
         self.word_a = word_a.word;
         self.word_b = word_b.word;
         self.keys = [];
         for letter_index in range(26):
             if word_a.letters[letter_index] != 0:
-                self.keys.append(chr(self.ASCII_A + letter_index));
+                self.keys.append(chr(AnagramPair.ASCII_A + letter_index));
         self.key_count = len(self.keys);
     # If the specified permutation produces perfect squares from both words, returns the larger of the two perfect squares.
     # Otherwise returns 0.
@@ -77,13 +73,11 @@ class AnagramPair:
 
 class Word:
     ASCII_A = ord('A');
-    word = None;
-    letters = None;
     def __init__(self, word):
         self.word = word;
         self.letters = [0] * 26;
         for letter in word:
-            letter_index = ord(letter) - self.ASCII_A;
+            letter_index = ord(letter) - Word.ASCII_A;
             self.letters[letter_index] += 1;
     def __cmp__(self, other):
         return cmp(self.letters, other.letters);

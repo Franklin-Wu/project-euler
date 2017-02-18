@@ -65,9 +65,7 @@ import time;
 
 start_time = time.time();
 
-class EdgeTo(object):
-    to_node = None;
-    weight = None;
+class EdgeTo:
     def __init__(self, to_node, weight):
         self.to_node = to_node;
         self.weight = weight;

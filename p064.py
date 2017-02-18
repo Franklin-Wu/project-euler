@@ -103,16 +103,20 @@ start_time = time.time();
 N = 10000;
 
 class Iteration:
-    a = None;
-    n1 = None;
-    d1 = None;
-    w = None;
-    n2 = None;
-    d2 = None;
+    def __init__(self):
+        self.a = None;
+        self.n1 = None;
+        self.d1 = None;
+        self.w = None;
+        self.n2 = None;
+        self.d2 = None;
+
     def __eq__(self, other):
         return (self.a == other.a) and (self.n1 == other.n1) and (self.d1 == other.d1) and (self.w == other.w) and (self.n2 == other.n2) and (self.d2 == other.d2);
+
     def __ne__(self, other):
         return (self.a != other.a) or (self.n1 != other.n1) or (self.d1 != other.d1) or (self.w != other.w) or (self.n2 != other.n2) or (self.d2 != other.d2);
+
     def __str__(self):
         return str(self.a) + ' ' + str(self.n1) + ' ' + str(self.d1) + ' ' + str(self.w) + ' ' + str(self.n2) + ' ' + str(self.d2);
 

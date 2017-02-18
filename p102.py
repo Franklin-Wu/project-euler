@@ -25,10 +25,6 @@ FILENAME = "p102_triangles.txt";
 CHAR_THETA = unichr(0x03b8);
 
 class Point:
-    x = None;
-    y = None;
-    r = None;
-    theta = None;
     def __init__(self, x, y):
         self.x = int(x);
         self.y = int(y);
@@ -45,17 +41,6 @@ class Point:
         return (self.x == other.x) and (self.y == other.y);
     def __ne__(self, other):
         return not __eq__(self, other);
-
-class Rectangle:
-    top_left = None;
-    right_bottom = None;
-    def __init__(self, top, left, right, bottom):
-        self.top_left = Point(left, top);
-        self.bottom_right = Point(right, bottom);
-    def __str__(self):
-        return "%s, %s" % (self.top_left, self.right_bottom);
-    def __repr__(self):
-        return  str(self);
 
 # If the largest angle between any 2 points is less than 180 degrees, the origin is not encompassed by the triangle:
 #
@@ -85,16 +70,11 @@ class Rectangle:
 #    p_2
 #
 class Triangle:
-    p_0 = None;
-    p_1 = None;
-    p_2 = None;
-    #bounding_rectangle = None;
-    contains_origin = None;
     def __init__(self, p_0, p_1, p_2):
         self.p_0 = p_0;
         self.p_1 = p_1;
         self.p_2 = p_2;
-        #self.bounding_rectangle = Rectangle(self.get_left_point(), self.get_left_point(), self.get_left_point(), self.get_left_point());
+        self.contains_origin = None;
         (angle_a_base_0, angle_b_base_0) = get_angles_from_to_and_to(p_0, p_1, p_2);
         (angle_a_base_1, angle_b_base_1) = get_angles_from_to_and_to(p_1, p_0, p_2);
         (angle_a_base_2, angle_b_base_2) = get_angles_from_to_and_to(p_2, p_0, p_1);

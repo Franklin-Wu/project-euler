@@ -75,14 +75,10 @@ def get_left_child_index(i):
     return int(i + 1 + math.floor(((math.sqrt(float(1 + (8 * i))) - 1) / 2)));
 
 class Node:
-    global array;
-    global array_size;
-    value = 0;
-    left  = None;
-    right = None;
-    max_path_value = 0;
     def __init__(self, array_index):
         self.value = array[array_index];
+        self.left  = None;
+        self.right = None;
         left_child_array_index = get_left_child_index(array_index);
         right_child_array_index = left_child_array_index + 1;
         left_path_value = 0;
