@@ -106,10 +106,6 @@ def is_power_of_two(n):
 def is_even(n):
     return round(n / 2) * 2 == n;
 
-# If n is a power-of-2, m(k) is log_2(n).
-# Otherwise, if n is odd, m(k) is 1 + m(k-1).
-# Otherwise (n is an even non-power-of-2), m(k) is 1 + m(k/2).
-
 def print_execution_time():
     print 'Execution time = %f seconds.' % (time.time() - start_time);
 
@@ -151,6 +147,10 @@ initialize_primes_lists();
 # Use 1-based indexing so m(k) = m[index]; m[0] is not used.
 m = [0] * (k_max + 1);
 for k in range(2, k_max + 1):
+    # If n is a power-of-2, m(k) is log_2(n).
+    # Otherwise, if n is odd, m(k) is 1 + m(k-1).
+    # Otherwise (n is an even non-power-of-2), m(k) is 1 + m(k/2).
+    # This is incorrect: fails for m(15).
     if is_power_of_two(k):
         m[k] = round(math.log(k, 2));
     elif is_even(k):
