@@ -22,6 +22,7 @@
 # We shall define m(k) to be the minimum number of multiplications to compute n^k; for example m(15) = 5.
 # For 1 <= k <= 200, find summation(m(k)).
 
+import math;
 import time;
 
 start_time = time.time();
@@ -88,14 +89,26 @@ def get_prime_factorization(n):
         prime = primes[prime_index];
         exponent = 0;
         while n % prime == 0:
-            exponent += 1;            
+            exponent += 1;
             n /= prime;
-        prime_factorization.append([prime, exponent]);
+        if exponent > 0:
+            prime_factorization.append([prime, exponent]);
         prime_index += 1;
         if prime_index >= prime_count:
             print 'get_prime_factorization(%d) failed due to insufficiently large primes table.' % n;
             sys.exit();
     return prime_factorization;
+
+def is_power_of_two(n):
+    nearest_whole_exponent = round(math.log(n, 2));
+    return 2 ** nearest_whole_exponent == n;
+
+def is_even(n):
+    return round(n / 2) * 2 == n;
+
+# If n is a power-of-2, m(k) is log_2(n).
+# Otherwise, if n is odd, m(k) is 1 + m(k-1).
+# Otherwise (n is an even non-power-of-2), m(k) is 1 + m(k/2).
 
 def print_execution_time():
     print 'Execution time = %f seconds.' % (time.time() - start_time);
@@ -131,13 +144,21 @@ def print_execution_time():
 # 9    4    1+1 = 2; 2+2 = 4; 4+4 = 8; 1+8 = 9
 # 10   4    1+1 = 2; 2+2 = 4; 4+4 = 8; 2+8 = 10
 # 11   5    1+1 = 2; 2+2 = 4; 4+4 = 8; 2+8 = 10; 1+10 = 11
+# 12   4    1+1 = 2; 2+2 = 4; 4+4 = 8; 4+8 = 12
 
-k_max = 10;
+k_max = 35;
 initialize_primes_lists();
 # Use 1-based indexing so m(k) = m[index]; m[0] is not used.
 m = [0] * (k_max + 1);
 for k in range(2, k_max + 1):
-    print k, get_prime_factorization(k);
+    if is_power_of_two(k):
+        m[k] = round(math.log(k, 2));
+    elif is_even(k):
+        m[k] = 1 + m[k / 2];
+    else:
+        m[k] = 1 + m[k - 1];
+    #print k, get_prime_factorization(k), is_power_of_two(k), is_even(k);
+    print k, m[k];
 print m;
 
 print_execution_time();
